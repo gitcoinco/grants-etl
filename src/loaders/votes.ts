@@ -35,16 +35,18 @@ const manageVotes = async ({ chainId, prisma, roundId }: Props) => {
     const votesResponse = (await getVotes({
       chainId: Number(chainId),
       roundId: round.roundId.toLowerCase(),
-    })) as GraphQLResponse<{ donations: any[] }>;
+    })) as GraphQLResponse<{ donations: any[] }[]>;
 
-    const votesList = votesResponse?.round?.donations || [];
+    const votesList = votesResponse?.round[0]?.donations || [];
 
     // logger(`Committing vote: ${vote.transaction}`)
     if (votesList.length > 0) {
       process.stdout.write(`\n`);
     }
     process.stdout.write(
-      `${votesList.length} votes found for round (${rIndex + 1}/${rounds.length}): ${round.roundId} \n`,
+      `${votesList.length} votes found for round (${rIndex + 1}/${
+        rounds.length
+      }): ${round.roundId} \n`
     );
 
     for (const [index, vote] of votesList.entries()) {
@@ -98,7 +100,7 @@ const manageVotes = async ({ chainId, prisma, roundId }: Props) => {
         process.stdout.write(
           ` => Committed ${currentCount} of ${votesList.length} votes (${
             Math.round((currentCount / votesList.length) * 10000) / 100
-          }%) ${isLast ? "\n" : "\r"}`,
+          }%) ${isLast ? "\n" : "\r"}`
         );
       }
     }
