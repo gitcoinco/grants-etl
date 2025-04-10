@@ -1,92 +1,101 @@
 // import { ToadScheduler, SimpleIntervalJob, AsyncTask } from 'toad-scheduler'
-import schedule from 'node-schedule'
-import minimist from 'minimist'
-import { main, disconnect, indexPassports, indexPoaps, indexArkham, handleAddressReformat } from '../main'
+import schedule from "node-schedule";
+import minimist from "minimist";
+import {
+  main,
+  disconnect,
+  indexPassports,
+  indexPoaps,
+  indexArkham,
+  handleAddressReformat,
+} from "../main";
 
-const argv = minimist(process.argv.slice(2), { boolean: ['passport', 'poap', 'arkham', 'reformat'] })
+const argv = minimist(process.argv.slice(2), {
+  boolean: ["passport", "poap", "arkham", "reformat"],
+});
 
-const rule = new schedule.RecurrenceRule()
-rule.hour = 8
-rule.minute = 15
+const rule = new schedule.RecurrenceRule();
+rule.hour = 8;
+rule.minute = 15;
 
-const { chainId, passport, poap, arkham, reformat } = argv
+const { chainId, passport, poap, arkham, reformat } = argv;
 
 if (reformat) {
   const startReformat = async () => {
     try {
-      await handleAddressReformat()
+      await handleAddressReformat();
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
 
-    await disconnect()
-  }
+    await disconnect();
+  };
 
-  startReformat()
+  startReformat();
 }
 
 if (chainId) {
-  console.log(`Scheduling job for chainId = ${chainId}`)
+  console.log(`Scheduling job for chainId = ${chainId}`);
 
   const job = schedule.scheduleJob(rule, async function () {
     try {
-      await main({ chainId })
+      await main({ chainId });
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
 
-    await disconnect()
+    await disconnect();
 
-    console.log(`Completed indexing for chainId = ${argv.chainId}`)
-  })
+    console.log(`Completed indexing for chainId = ${argv.chainId}`);
+  });
 
-  console.log(`Scheduled job (${job.name}) for chainId = ${chainId}`)
+  console.log(`Scheduled job (${job.name}) for chainId = ${chainId}`);
 }
 
 if (passport) {
-  console.log(`Scheduling job for Live Passports data`)
+  console.log(`Scheduling job for Live Passports data`);
 
   const job = schedule.scheduleJob(rule, async function () {
     try {
-      await indexPassports()
+      await indexPassports();
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
 
-    await disconnect()
+    await disconnect();
 
-    console.log(`Completed indexing for Passports`)
-  })
+    console.log(`Completed indexing for Passports`);
+  });
 
-  console.log(`Scheduled job (${job.name}) for Passports`)
+  console.log(`Scheduled job (${job.name}) for Passports`);
 }
 
 if (poap) {
   const startIndexing = async () => {
-    console.log(`Starting one-time job for PGN Poap data`)
+    console.log(`Starting one-time job for PGN Poap data`);
     try {
-      await indexPoaps()
+      await indexPoaps();
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
 
-    await disconnect()
-  }
+    await disconnect();
+  };
 
-  startIndexing()
+  startIndexing();
 }
 
 if (arkham) {
   const startIndexing = async () => {
-    console.log(`Starting one-time job for Arkham data`)
+    console.log(`Starting one-time job for Arkham data`);
     try {
-      await indexArkham()
+      await indexArkham();
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
 
-    await disconnect()
-  }
+    await disconnect();
+  };
 
-  startIndexing()
+  startIndexing();
 }

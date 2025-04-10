@@ -1,16 +1,16 @@
-import { PrismaClient } from '@prisma/client'
-import { GraphQLResponse, getVotes } from '../graphql'
+import { PrismaClient } from "@prisma/client";
+import { GraphQLResponse, getVotes } from "../graphql";
 
 type Props = {
-  chainId: string
-  prisma: PrismaClient
-  roundId?: string
-}
+  chainId: string;
+  prisma: PrismaClient;
+  roundId?: string;
+};
 
 const manageVotes = async ({ chainId, prisma, roundId }: Props) => {
   let roundFilter: { chainId: number; roundId?: string } = {
     chainId: Number(chainId),
-  }
+  };
 
   // let roundFilter: { chainId: number; roundId?: string; addedLastVotes: boolean } = {
   //   chainId: Number(chainId),
@@ -18,7 +18,7 @@ const manageVotes = async ({ chainId, prisma, roundId }: Props) => {
   // }
 
   if (roundId) {
-    roundFilter = { ...roundFilter, roundId }
+    roundFilter = { ...roundFilter, roundId };
   }
 
   // load rounds for chainId
@@ -29,28 +29,28 @@ const manageVotes = async ({ chainId, prisma, roundId }: Props) => {
       roundId: true,
       roundEndTime: true,
     },
-  })
+  });
 
   for (const [rIndex, round] of rounds.entries()) {
     const votesResponse = (await getVotes({
       chainId: Number(chainId),
       roundId: round.roundId.toLowerCase(),
-    })) as GraphQLResponse<{ donations: any[] }>
+    })) as GraphQLResponse<{ donations: any[] }>;
 
-    const votesList = votesResponse?.round?.donations || []
+    const votesList = votesResponse?.round?.donations || [];
 
     // logger(`Committing vote: ${vote.transaction}`)
     if (votesList.length > 0) {
-      process.stdout.write(`\n`)
+      process.stdout.write(`\n`);
     }
     process.stdout.write(
-      `${votesList.length} votes found for round (${rIndex + 1}/${rounds.length}): ${round.roundId} \n`
-    )
+      `${votesList.length} votes found for round (${rIndex + 1}/${rounds.length}): ${round.roundId} \n`,
+    );
 
     for (const [index, vote] of votesList.entries()) {
-      const address = vote.donorAddress.toLowerCase()
-      const currentCount = index + 1
-      const isLast = index + 1 === votesList.length
+      const address = vote.donorAddress.toLowerCase();
+      const currentCount = index + 1;
+      const isLast = index + 1 === votesList.length;
 
       await prisma.user.upsert({
         where: {
@@ -60,13 +60,13 @@ const manageVotes = async ({ chainId, prisma, roundId }: Props) => {
         create: {
           address,
         },
-      })
+      });
 
       const project = await prisma.project.findUnique({
         where: {
           projectKey: vote.projectId,
         },
-      })
+      });
 
       if (project) {
         await prisma.vote.upsert({
@@ -93,13 +93,13 @@ const manageVotes = async ({ chainId, prisma, roundId }: Props) => {
             amountUSD: vote.amountInUsd,
             amountRoundToken: vote.amountInRoundMatchToken,
           },
-        })
+        });
 
         process.stdout.write(
           ` => Committed ${currentCount} of ${votesList.length} votes (${
             Math.round((currentCount / votesList.length) * 10000) / 100
-          }%) ${isLast ? '\n' : '\r'}`
-        )
+          }%) ${isLast ? "\n" : "\r"}`,
+        );
       }
     }
 
@@ -116,6 +116,6 @@ const manageVotes = async ({ chainId, prisma, roundId }: Props) => {
     //   console.log(`\r\n   Round has ended, disabling further votes indexing\r\n`)
     // }
   }
-}
+};
 
-export default manageVotes
+export default manageVotes;

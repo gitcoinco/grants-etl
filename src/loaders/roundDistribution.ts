@@ -1,46 +1,51 @@
-import { PrismaClient } from '@prisma/client'
-import { fromHex } from 'viem'
-import { Price, fetchRoundDistributionData, formatDistributionPrice, grantFetch } from '../utils'
+import { PrismaClient } from "@prisma/client";
+import { fromHex } from "viem";
+import {
+  Price,
+  fetchRoundDistributionData,
+  formatDistributionPrice,
+  grantFetch,
+} from "../utils";
 
 type Props = {
-  chainId: string
-  prisma: PrismaClient
-}
+  chainId: string;
+  prisma: PrismaClient;
+};
 
 type Distro = {
-  contributionsCount: string
-  projectPayoutAddress: string
-  applicationId: string
-  projectId: string
-  matchPoolPercentage: number
-  projectName: string
+  contributionsCount: string;
+  projectPayoutAddress: string;
+  applicationId: string;
+  projectId: string;
+  matchPoolPercentage: number;
+  projectName: string;
   matchAmountInToken: {
-    type: string
-    hex: `0x${string}`
-  }
+    type: string;
+    hex: `0x${string}`;
+  };
   originalMatchAmountInToken: {
-    type: string
-    hex: `0x${string}`
-  }
-  index: number
-}
+    type: string;
+    hex: `0x${string}`;
+  };
+  index: number;
+};
 
 type Rows = {
-  contributionsCount: number
-  projectPayoutAddress: string
-  applicationId: number
-  projectId: string
-  matchPoolPercentage: number
-  projectName: string
-  matchAmountInTokenHex: string
-  matchAmountInToken: string
-  originalMatchAmountInTokenHex: string
-  originalMatchAmountInToken: string
-  index: number
-  chainId: number
-  roundKey: number
-  roundId: string
-}
+  contributionsCount: number;
+  projectPayoutAddress: string;
+  applicationId: number;
+  projectId: string;
+  matchPoolPercentage: number;
+  projectName: string;
+  matchAmountInTokenHex: string;
+  matchAmountInToken: string;
+  originalMatchAmountInTokenHex: string;
+  originalMatchAmountInToken: string;
+  index: number;
+  chainId: number;
+  roundKey: number;
+  roundId: string;
+};
 
 const manageRoundDistribution = async ({ chainId, prisma }: Props) => {
   // load rounds for chainId
@@ -52,9 +57,9 @@ const manageRoundDistribution = async ({ chainId, prisma }: Props) => {
       id: true,
       roundId: true,
     },
-  })
+  });
 
-  const priceList: Price[] = await grantFetch(`${chainId}/prices.json`)
+  const priceList: Price[] = await grantFetch(`${chainId}/prices.json`);
 
   // get all rounds' projects
   const allDistributionResults = (
@@ -65,15 +70,18 @@ const manageRoundDistribution = async ({ chainId, prisma }: Props) => {
         ...((await fetchRoundDistributionData({
           chainId: Number(chainId),
           roundId: r.roundId as `0x${string}`,
-        })) as { results: Distro[]; token: { price: number; decimal: number; code: string } }),
-      }))
+        })) as {
+          results: Distro[];
+          token: { price: number; decimal: number; code: string };
+        }),
+      })),
     )
-  ).filter((i) => i.results !== null && i.results !== undefined)
+  ).filter((i) => i.results !== null && i.results !== undefined);
 
-  let rows: Rows[] = []
+  let rows: Rows[] = [];
 
   for (let i = 0; i < allDistributionResults.length; i++) {
-    const { round, roundId, results, token } = allDistributionResults[i]
+    const { round, roundId, results, token } = allDistributionResults[i];
 
     const distros = results.map((distro) => ({
       contributionsCount: Number(distro.contributionsCount || 0),
@@ -83,9 +91,15 @@ const manageRoundDistribution = async ({ chainId, prisma }: Props) => {
       matchPoolPercentage: distro.matchPoolPercentage,
       projectName: distro.projectName,
       matchAmountInTokenHex: distro.matchAmountInToken.hex,
-      matchAmountInToken: fromHex(distro.matchAmountInToken.hex, 'bigint').toString(),
+      matchAmountInToken: fromHex(
+        distro.matchAmountInToken.hex,
+        "bigint",
+      ).toString(),
       originalMatchAmountInTokenHex: distro.originalMatchAmountInToken.hex,
-      originalMatchAmountInToken: fromHex(distro.originalMatchAmountInToken.hex, 'bigint').toString(),
+      originalMatchAmountInToken: fromHex(
+        distro.originalMatchAmountInToken.hex,
+        "bigint",
+      ).toString(),
       matchAmountUSD:
         token.price > 0
           ? formatDistributionPrice({
@@ -106,9 +120,9 @@ const manageRoundDistribution = async ({ chainId, prisma }: Props) => {
       chainId: Number(chainId),
       roundKey: round,
       roundId,
-    }))
+    }));
 
-    rows = [...rows, ...distros]
+    rows = [...rows, ...distros];
   }
 
   for (const row of rows) {
@@ -124,8 +138,8 @@ const manageRoundDistribution = async ({ chainId, prisma }: Props) => {
       },
       update: row,
       create: row,
-    })
+    });
   }
-}
+};
 
-export default manageRoundDistribution
+export default manageRoundDistribution;

@@ -14,12 +14,12 @@
     "rootDir": "./src",
     "outDir": "./build",
     "paths": {
-      "@/*": ["./src/*"],
+      "@/*": ["./src/*"]
     }
   },
-	"ts-node": {
-		"transpileOnly": true,
-		"files": true,
-		"experimentalResolver": true
-	}
+  "ts-node": {
+    "transpileOnly": true,
+    "files": true,
+    "experimentalResolver": true
+  }
 }

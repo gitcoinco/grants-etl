@@ -1,11 +1,11 @@
-import { PrismaClient } from '@prisma/client'
-import axios from 'axios'
-import { json2csv } from 'json-2-csv'
+import { PrismaClient } from "@prisma/client";
+import axios from "axios";
+import { json2csv } from "json-2-csv";
 
 type Props = {
-  chainId?: string
-  prisma: PrismaClient
-}
+  chainId?: string;
+  prisma: PrismaClient;
+};
 
 const duneAddressTracked = async ({ prisma }: Props): Promise<any> => {
   const result: any[] = await prisma.$queryRaw`WITH CombinedAddresses AS (
@@ -49,28 +49,28 @@ const duneAddressTracked = async ({ prisma }: Props): Promise<any> => {
       VoteStatus vs ON ca."address" = vs."address"
   LEFT JOIN 
       PassportStatus ps ON ca."address" = ps."address"
-  `
+  `;
 
-  console.log(`Pushing update for Passport users: ${result.length}`)
+  console.log(`Pushing update for Passport users: ${result.length}`);
 
-  const data = json2csv(result)
+  const data = json2csv(result);
 
   const { data: response } = await axios.post(
     `https://api.dune.com/api/v1/table/upload/csv`,
     {
-      table_name: 'passport',
+      table_name: "passport",
       data,
     },
     {
       headers: {
-        'X-Dune-Api-Key': process.env.DUNE_API_KEY as string,
+        "X-Dune-Api-Key": process.env.DUNE_API_KEY as string,
       },
-    }
-  )
+    },
+  );
 
   if (response.success) {
-    console.log(`Passport upload completed`)
+    console.log(`Passport upload completed`);
   }
-}
+};
 
-export default duneAddressTracked
+export default duneAddressTracked;

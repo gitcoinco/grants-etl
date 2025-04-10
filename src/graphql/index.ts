@@ -1,18 +1,25 @@
-import request, { gql } from 'graphql-request'
+import request, { gql } from "graphql-request";
 
 export type GraphQLResponse<K> = {
-  round: K
-}
+  round: K;
+};
 
-export const gqlRequest = async (document: any, variable: any): Promise<any> => {
+export const gqlRequest = async (
+  document: any,
+  variable: any,
+): Promise<any> => {
   try {
-    return await request(`https://grants-stack-indexer-v2.gitcoin.co/graphql`, document, variable)
+    return await request(
+      `https://grants-stack-indexer-v2.gitcoin.co/graphql`,
+      document,
+      variable,
+    );
   } catch (error) {
-    console.log(`Request failed, refreshing in 2 seconds`)
-    await new Promise((res) => setTimeout(res, 2000))
-    return await gqlRequest(document, variable)
+    console.log(`Request failed, refreshing in 2 seconds`);
+    await new Promise((res) => setTimeout(res, 2000));
+    return await gqlRequest(document, variable);
   }
-}
+};
 
 export const getRounds = async (chainId: number) => {
   return gqlRequest(
@@ -46,11 +53,17 @@ export const getRounds = async (chainId: number) => {
         }
       }
     `,
-    { chainId }
-  )
-}
+    { chainId },
+  );
+};
 
-export const getApplications = async ({ chainId, roundId }: { chainId: number; roundId: string }) => {
+export const getApplications = async ({
+  chainId,
+  roundId,
+}: {
+  chainId: number;
+  roundId: string;
+}) => {
   return gqlRequest(
     gql`
       query getApplications($roundId: String = "", $chainId: Int = 10) {
@@ -72,11 +85,17 @@ export const getApplications = async ({ chainId, roundId }: { chainId: number; r
         }
       }
     `,
-    { chainId, roundId }
-  )
-}
+    { chainId, roundId },
+  );
+};
 
-export const getVotes = async ({ chainId, roundId }: { chainId: number; roundId: string }) => {
+export const getVotes = async ({
+  chainId,
+  roundId,
+}: {
+  chainId: number;
+  roundId: string;
+}) => {
   return gqlRequest(
     gql`
       query getVotes($roundId: String = "", $chainId: Int = 10) {
@@ -99,22 +118,26 @@ export const getVotes = async ({ chainId, roundId }: { chainId: number; roundId:
         }
       }
     `,
-    { chainId, roundId }
-  )
-}
+    { chainId, roundId },
+  );
+};
 
 export const getTokenPrice = async ({
   chainId,
   tokenAddress,
   blockNumber,
 }: {
-  chainId: number
-  tokenAddress: string
-  blockNumber: string
+  chainId: number;
+  tokenAddress: string;
+  blockNumber: string;
 }) => {
   return gqlRequest(
     gql`
-      query getTokenPrice($tokenAddress: String = "", $chainId: Int = 10, $blockNumber: BigFloat = "") {
+      query getTokenPrice(
+        $tokenAddress: String = ""
+        $chainId: Int = 10
+        $blockNumber: BigFloat = ""
+      ) {
         prices(
           orderBy: BLOCK_NUMBER_DESC
           filter: {
@@ -131,6 +154,6 @@ export const getTokenPrice = async ({
         }
       }
     `,
-    { chainId, tokenAddress, blockNumber }
-  )
-}
+    { chainId, tokenAddress, blockNumber },
+  );
+};

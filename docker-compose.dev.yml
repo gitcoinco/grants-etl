@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 services:
   grantsdb:
     image: postgres
@@ -11,7 +11,7 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=Grants
     ports:
-      - '5432:5432'
+      - "5432:5432"
     command: ["postgres", "-cshared_preload_libraries=pg_stat_statements"]
   pgadmin:
     image: dpage/pgadmin4
