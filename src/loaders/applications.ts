@@ -36,14 +36,16 @@ const manageApplications = async ({ chainId, prisma, roundId }: Props) => {
     const applicationResponse = (await getApplications({
       chainId: Number(chainId),
       roundId: round.roundId.toLowerCase(),
-    })) as GraphQLResponse<{ applications: any[] }>;
+    })) as GraphQLResponse<{ applications: any[] }[]>;
 
-    const applicationList = applicationResponse?.round?.applications || [];
+    const applicationList = applicationResponse?.round[0]?.applications || [];
 
     console.log(
       `${applicationList.length} application${
         applicationList.length !== 1 ? "s" : ""
-      } found for active application round (${rIndex + 1}/${rounds.length}) : ${round.roundId}`,
+      } found for active application round (${rIndex + 1}/${rounds.length}) : ${
+        round.roundId
+      }`
     );
 
     for (const [index, application] of applicationList.entries()) {
@@ -116,9 +118,11 @@ const manageApplications = async ({ chainId, prisma, roundId }: Props) => {
       });
 
       process.stdout.write(
-        ` => Committed ${index + 1} of ${applicationList.length} applications (${
+        ` => Committed ${index + 1} of ${
+          applicationList.length
+        } applications (${
           Math.round((currentCount / applicationList.length) * 10000) / 100
-        }%) ${isLast ? "\n" : "\r"}`,
+        }%) ${isLast ? "\n" : "\r"}`
       );
     }
 
@@ -137,7 +141,7 @@ const manageApplications = async ({ chainId, prisma, roundId }: Props) => {
       });
 
       console.log(
-        `\r\n   Round application period has ended, disabling further indexing\r\n`,
+        `\r\n   Round application period has ended, disabling further indexing\r\n`
       );
     }
   }

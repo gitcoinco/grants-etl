@@ -67,11 +67,12 @@ export const grantFetch = async (path: string) => {
 
 export const initialFetch = async (chainId: string) => {
   try {
-    const block =
-      await clients[Number(chainId) as keyof typeof clients].getBlock();
+    const block = await clients[
+      Number(chainId) as keyof typeof clients
+    ].getBlock();
 
     console.log(
-      `Current block on chainId ${chainId} is ${block.number?.toString()}`,
+      `Current block on chainId ${chainId} is ${block.number?.toString()}`
     );
   } catch (error) {}
 };
@@ -144,7 +145,7 @@ export const createExtraParams = (next_page_params: NextPageParams) => {
       const prefix = acc ? "&" : "";
       return `${acc}${prefix}${curr}=${value}`;
     },
-    "",
+    ""
   );
 };
 
@@ -159,8 +160,8 @@ export const fetchBlockTimestamp = async ({
     blockNumbers.map((blockNumber) =>
       clients[Number(chainId) as keyof typeof clients]
         .getBlock({ blockNumber: BigInt(blockNumber) })
-        .then((block) => block.timestamp),
-    ),
+        .then((block) => block.timestamp)
+    )
   );
 };
 
@@ -204,7 +205,7 @@ export const fetchRoundDistributionData = async ({
         address: roundId,
         abi: roundABI,
         functionName: "payoutStrategy",
-      }),
+      })
     ) as `0x${string}`;
 
     const contractConfig = {
@@ -263,16 +264,14 @@ export const fetchRoundDistributionData = async ({
           }
 
           const targetTokenPrice = (await getTokenPrice({
-            chainId,
-            tokenAddress: nTokenAddress,
-            blockNumber: targetBlockNumber.toString(),
-          })) as { prices: any[] };
+            tokenCode: token.code,
+          })) as { priceCache: any[] };
 
-          token.price = targetTokenPrice.prices[0].priceInUsd ?? 0;
+          token.price = targetTokenPrice.priceCache[0].priceUsd ?? 0;
         }
 
         const res = await fetch(
-          `https://d16c97c2np8a2o.cloudfront.net/ipfs/${metaPtr}`,
+          `https://d16c97c2np8a2o.cloudfront.net/ipfs/${metaPtr}`
         );
 
         const distro = await res.json();
@@ -287,7 +286,7 @@ export const fetchRoundDistributionData = async ({
     console.log(error);
 
     console.log(
-      `Error occurred while fetching round distro data for ${roundId}`,
+      `Error occurred while fetching round distro data for ${roundId}`
     );
   }
 
@@ -306,7 +305,7 @@ export const formatDistributionPrice = ({
   return Number(
     formatUnits(
       hexToBigInt(amount) * parseUnits(price.toString(), decimal),
-      decimal + 18,
-    ),
+      decimal + 18
+    )
   );
 };

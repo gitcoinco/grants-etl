@@ -6,13 +6,17 @@ export type GraphQLResponse<K> = {
 
 export const gqlRequest = async (
   document: any,
-  variable: any,
+  variable: any
 ): Promise<any> => {
   try {
     return await request(
-      `https://grants-stack-indexer-v2.gitcoin.co/graphql`,
+      `https://beta.indexer.gitcoin.co/v1/graphql`,
       document,
       variable,
+      {
+        "content-type": "application/json",
+        "x-hasura-admin-secret": process.env.INDEXER_PASSWORD || "",
+      }
     );
   } catch (error) {
     console.log(`Request failed, refreshing in 2 seconds`);
@@ -25,7 +29,7 @@ export const getRounds = async (chainId: number) => {
   return gqlRequest(
     gql`
       query getRounds($chainId: Int = 10) {
-        rounds(condition: { chainId: $chainId }) {
+        rounds(where: { chainId: { _eq: $chainId } }) {
           id
           chainId
           applicationMetadata
@@ -53,7 +57,7 @@ export const getRounds = async (chainId: number) => {
         }
       }
     `,
-    { chainId },
+    { chainId }
   );
 };
 
@@ -67,7 +71,7 @@ export const getApplications = async ({
   return gqlRequest(
     gql`
       query getApplications($roundId: String = "", $chainId: Int = 10) {
-        round(chainId: $chainId, id: $roundId) {
+        rounds(where: { chainId: { _eq: $chainId }, id: { _eq: $roundId } }) {
           applications {
             id
             projectId
@@ -85,7 +89,7 @@ export const getApplications = async ({
         }
       }
     `,
-    { chainId, roundId },
+    { chainId, roundId }
   );
 };
 
@@ -99,7 +103,7 @@ export const getVotes = async ({
   return gqlRequest(
     gql`
       query getVotes($roundId: String = "", $chainId: Int = 10) {
-        round(chainId: $chainId, id: $roundId) {
+        rounds(where: { chainId: { _eq: $chainId }, id: { _eq: $roundId } }) {
           donations {
             amount
             amountInRoundMatchToken
@@ -118,42 +122,24 @@ export const getVotes = async ({
         }
       }
     `,
-    { chainId, roundId },
+    { chainId, roundId }
   );
 };
 
-export const getTokenPrice = async ({
-  chainId,
-  tokenAddress,
-  blockNumber,
-}: {
-  chainId: number;
-  tokenAddress: string;
-  blockNumber: string;
-}) => {
+export const getTokenPrice = async ({ tokenCode }: { tokenCode: string }) => {
   return gqlRequest(
     gql`
-      query getTokenPrice(
-        $tokenAddress: String = ""
-        $chainId: Int = 10
-        $blockNumber: BigFloat = ""
-      ) {
-        prices(
+      query getTokenPrice($tokenCode: String = "") {
+        priceCache(
           orderBy: BLOCK_NUMBER_DESC
-          filter: {
-            tokenAddress: { equalTo: $tokenAddress }
-            chainId: { equalTo: $chainId }
-            blockNumber: { lessThanOrEqualTo: $blockNumber }
-          }
-          first: 1
+          filter: { tokenCode: { equalTo: $tokenCode } }
+          limit: 1
         ) {
           id
-          chainId
-          priceInUsd
-          blockNumber
+          priceUsd
         }
       }
     `,
-    { chainId, tokenAddress, blockNumber },
+    { tokenCode }
   );
 };
