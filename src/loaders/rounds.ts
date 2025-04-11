@@ -20,7 +20,7 @@ const manageRounds = async ({ chainId, prisma, roundId }: Props) => {
 
     if (roundsData.length === 0) {
       console.error(
-        "This round does not exist. Please make sure to specify the right chainId for the round",
+        "This round does not exist. Please make sure to specify the right chainId for the round"
       );
       process.exit(1);
     }
@@ -32,46 +32,44 @@ const manageRounds = async ({ chainId, prisma, roundId }: Props) => {
   for (let i = 0; i < roundsData.length; i++) {
     const r = roundsData[i];
 
-    if (isAddress(r.id)) {
-      // default program to address zero
-      const programContractAddress = isAddress(
-        r.roundMetadata?.programContractAddress,
-      )
-        ? getAddress(r.roundMetadata?.programContractAddress)
-        : ethers.constants.AddressZero;
+    // default program to address zero
+    const programContractAddress = isAddress(
+      r.roundMetadata?.programContractAddress
+    )
+      ? getAddress(r.roundMetadata?.programContractAddress)
+      : ethers.constants.AddressZero;
 
-      const [createdAt, updatedAt] = await fetchBlockTimestamp({
-        chainId: Number(chainId),
-        blockNumbers: [r.createdAtBlock, r.updatedAtBlock],
-      });
+    const [createdAt, updatedAt] = await fetchBlockTimestamp({
+      chainId: Number(chainId),
+      blockNumbers: [r.createdAtBlock, r.updatedAtBlock],
+    });
 
-      rounds.push({
-        amountUSD: r.totalAmountDonatedInUsd,
-        votes: r.totalDonationsCount,
-        token: r.matchTokenAddress,
-        matchAmount: r.matchAmount,
-        matchAmountUSD: r.matchAmountInUsd,
-        uniqueContributors: r.uniqueDonorsCount,
-        applicationMetaPtr: r.applicationMetadataCid,
-        applicationMetadata: r.applicationMetadata,
-        metaPtr: r.roundMetadataCid,
-        metadata: r.roundMetadata,
-        applicationsStartTime: handleDateString(r.applicationsStartTime),
-        applicationsEndTime: handleDateString(r.applicationsEndTime),
-        roundStartTime: handleDateString(r.donationsStartTime),
-        roundEndTime: handleDateString(r.donationsEndTime),
-        createdAt,
-        updatedAt,
-        createdAtBlock: Number(r.createdAtBlock),
-        updatedAtBlock: Number(r.updatedAtBlock),
-        chainId: Number(chainId),
-        roundId: r.id.toLowerCase(),
-        programContractAddress,
-      });
+    rounds.push({
+      amountUSD: r.totalAmountDonatedInUsd,
+      votes: r.totalDonationsCount,
+      token: r.matchTokenAddress,
+      matchAmount: r.matchAmount.toString(),
+      matchAmountUSD: r.matchAmountInUsd,
+      uniqueContributors: r.uniqueDonorsCount,
+      applicationMetaPtr: r.applicationMetadataCid,
+      applicationMetadata: r.applicationMetadata,
+      metaPtr: r.roundMetadataCid,
+      metadata: r.roundMetadata,
+      applicationsStartTime: handleDateString(r.applicationsStartTime),
+      applicationsEndTime: handleDateString(r.applicationsEndTime),
+      roundStartTime: handleDateString(r.donationsStartTime),
+      roundEndTime: handleDateString(r.donationsEndTime),
+      createdAt,
+      updatedAt,
+      createdAtBlock: Number(r.createdAtBlock),
+      updatedAtBlock: Number(r.updatedAtBlock),
+      chainId: Number(chainId),
+      roundId: r.id.toLowerCase(),
+      programContractAddress,
+    });
 
-      if (programContractAddress) {
-        programs.add(programContractAddress);
-      }
+    if (programContractAddress) {
+      programs.add(programContractAddress);
     }
   }
 
@@ -87,9 +85,9 @@ const manageRounds = async ({ chainId, prisma, roundId }: Props) => {
   const programsTotal = programsList.length;
 
   console.log(
-    `${rounds.length} round${roundsTotal !== 1 ? "s" : ""} found across ${programsTotal} program${
-      programsTotal !== 1 ? "s" : ""
-    }`,
+    `${rounds.length} round${
+      roundsTotal !== 1 ? "s" : ""
+    } found across ${programsTotal} program${programsTotal !== 1 ? "s" : ""}`
   );
 
   await prisma.program.createMany({
